@@ -4,7 +4,7 @@
     "slug": "foodize-app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/Sufrah.png",
+    "icon": "./assets/images/Sufrah1.png",
     "scheme": "foodizeapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,

@@ -6,3 +6,5 @@ const register = async (userInfo: FormData) => {
   await storeToken(res.data.token);
   return res;
 };
+
+export default register;
