@@ -1,5 +1,6 @@
 import { colors } from "@/colors/colors";
 import CustomButton from "@/components/customButton";
+import { router } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
@@ -15,8 +16,21 @@ const LandingPage = () => {
       />
 
       <View style={styles.buttonContainer}>
-        <CustomButton text="Sign Up" onPress={() => {}} variant="primary" />
-        <CustomButton text="Sign In" onPress={() => {}} variant="outline" />
+        <CustomButton
+          text="Sign Up"
+          onPress={() => {
+            router.push("/auth/signup");
+          }}
+          variant="primary"
+        />
+
+        <CustomButton
+          text="Sign In"
+          onPress={() => {
+            router.push("/auth/signIn");
+          }}
+          variant="outline"
+        />
         <TouchableOpacity onPress={() => {}}>
           <Text style={styles.guest}>Continue as guest</Text>
         </TouchableOpacity>

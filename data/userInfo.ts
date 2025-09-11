@@ -9,3 +9,5 @@ interface UserInfo extends SignInUserInfo {
   image: string;
   email: string;
 }
+
+export { SignInUserInfo, UserInfo };
