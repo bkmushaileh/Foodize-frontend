@@ -12,4 +12,6 @@ export const colors = {
   muted: "#6B7280",
   white: "#FFFFFF",
   bg: "#FAFAFA",
+
+  error: "#B00020",
 };
