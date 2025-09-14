@@ -12,7 +12,7 @@ const signUp = async (userInfo: FormData) => {
 };
 
 const signIn = async (userInfo: SignInUserInfo) => {
-  const res = await instance.post("/auth/login", userInfo);
+  const res = await instance.post("/auth/signin", userInfo);
   console.log(res.data.token);
   await storeToken(res.data.token);
   return res;
