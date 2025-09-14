@@ -27,11 +27,11 @@ export default function RootLayout() {
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen
             name="auth/signup"
-            options={{ title: "Sign Up", headerBackTitle: "Landing Page" }}
+            options={{ title: "Sign Up", headerBackTitle: "Back" }}
           />
           <Stack.Screen
             name="auth/signIn"
-            options={{ title: "Sign In", headerBackTitle: "Landing Page" }}
+            options={{ title: "Sign In", headerBackTitle: "Back" }}
           />
           <Stack.Protected guard={isAuthenticated}>
             <Stack.Screen
