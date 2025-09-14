@@ -38,11 +38,15 @@ const CustomButton = ({ text, onPress, variant = "primary" }: ButtonProps) => {
 
 const styles = StyleSheet.create({
   base: {
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    borderRadius: 15,
+    backgroundColor: colors.yellowDark,
+    paddingVertical: 14,
+    borderRadius: 30,
     alignItems: "center",
-    width: 280,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
+    width: 350,
   },
   text: {
     fontSize: 18,
