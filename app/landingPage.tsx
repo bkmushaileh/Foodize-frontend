@@ -4,7 +4,7 @@ import { router } from "expo-router";
 import React from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
-const LandingPage = () => {
+export default function Index() {
   return (
     <View style={styles.container}>
       <Image
@@ -37,9 +37,7 @@ const LandingPage = () => {
       </View>
     </View>
   );
-};
-
-export default LandingPage;
+}
 
 const styles = StyleSheet.create({
   container: {
