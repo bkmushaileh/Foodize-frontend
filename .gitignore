@@ -2,7 +2,7 @@
 
 # dependencies
 node_modules/
-
+api/baseurl.ts
 # Expo
 .expo/
 dist/
