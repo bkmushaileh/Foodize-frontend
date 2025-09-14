@@ -1,15 +1,18 @@
+import AuthContext from "@/app/context/AuthContext";
 import { colors } from "@/colors/colors";
 import { SignInUserInfo } from "@/data/userInfo";
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import CustomButton from "../customButton";
 import CustomTextInput from "../customTextInput";
 
 const SignInScreen = () => {
   const [userInfo, setUserInfo] = useState<SignInUserInfo>({
-    username: "",
+    email: "",
     password: "",
   });
+  const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
+
   return (
     <View style={styles.container}>
       <Text style={styles.welcomeText}>Welcome to Sufrah 🍴</Text>
@@ -17,9 +20,9 @@ const SignInScreen = () => {
         Log in to explore recipes & share your own
       </Text>
       <CustomTextInput
-        placeholder={"Username"}
-        value={userInfo.username}
-        onChangeText={(text) => setUserInfo({ ...userInfo, username: text })}
+        placeholder={"Email"}
+        value={userInfo.email}
+        onChangeText={(text) => setUserInfo({ ...userInfo, email: text })}
       ></CustomTextInput>
       <CustomTextInput
         placeholder={"Password"}

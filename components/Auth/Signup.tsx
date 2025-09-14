@@ -1,4 +1,5 @@
-import signUp from "@/api/auth";
+import { signUp } from "@/api/auth";
+import AuthContext from "@/app/context/AuthContext";
 import { colors } from "@/colors/colors";
 import CustomButton from "@/components/customButton";
 import { UserInfo } from "@/data/userInfo";
@@ -7,8 +8,9 @@ import { useHeaderHeight } from "@react-navigation/elements";
 import { useMutation } from "@tanstack/react-query";
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
-import React, { useState } from "react";
-import { Image as RNImage } from "react-native";
+import { Formik } from "formik";
+import React, { useContext, useState } from "react";
+import { Alert } from "react-native";
 
 import {
   Image,
@@ -41,61 +43,51 @@ const RegisterSchema = Yup.object().shape({
   image: Yup.string().required("Image is required"),
 });
 
-const RegisterScreen = () => {
-  const defaultImageUri = RNImage.resolveAssetSource(
-    require("@/assets/images/default.png")
-  ).uri;
+const SignupScreen = () => {
   const [userInfo, setUserInfo] = useState<UserInfo>({
-    password: "",
+    password: " ",
     email: "",
     username: "",
-    image: defaultImageUri,
+    image: "",
   });
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
-  const [confirmationPassword, setConfirmationPassword] = useState<string>();
+
   const headerHeight = useHeaderHeight();
+  const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
+
+  const handleError = (error: string) => {
+    if (error === "Request failed with status code 400") {
+      Alert.alert("Email already exists");
+    }
+  };
 
   const { mutate, isPending } = useMutation({
     mutationKey: ["signup"],
     mutationFn: signUp,
     onSuccess: () => {
-      console.log("Signup successfully!");
       setIsAuthenticated(true);
-      router.dismissTo("/(tabs)/recipes");
+      router.dismissTo("/(tabs)");
     },
     onError: (err) => {
       console.log("Error:", err);
+      console.log(err.message);
+      handleError(err.message);
     },
   });
 
-  const pickImage = async () => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const pickImage = async (setFieldValue: any) => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [3, 4],
-      quality: 0.7,
+      quality: 0.5,
     });
 
     if (!result.canceled) {
-      setUserInfo((p) => ({ ...p, image: result.assets[0].uri }));
+      setFieldValue("image", result.assets[0].uri);
     }
-  };
-
-  const handleSubmit = () => {
-    const formData = new FormData();
-    formData.append("username", userInfo.username);
-    formData.append("password", userInfo.password);
-    formData.append("email", userInfo.email.trim());
-    formData.append("image", {
-      uri: userInfo.image,
-      name: "profile.jpg",
-      type: "image/jpeg",
-    } as any);
-    mutate(formData);
-    console.log(userInfo);
-    console.log(confirmationPassword);
   };
 
   return (
@@ -105,146 +97,179 @@ const RegisterScreen = () => {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={headerHeight + 8}
       >
-        <View style={styles.formWrap}>
-          <View style={styles.avatarWrap}>
-            <Image
-              source={
-                userInfo.image
-                  ? { uri: userInfo.image }
-                  : require("@/assets/images/default.png")
-              }
-              style={styles.avatar}
-            />
-            <TouchableOpacity
-              onPress={pickImage}
-              style={styles.imagePicked}
-              accessibilityRole="button"
-              accessibilityLabel="Change profile image"
-            >
-              <FontAwesome5 name="pen" size={18} color={colors.blueNavy} />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.helper}>
-            {/* {touched.image && errors.image ? errors.image : " "} */}
-          </Text>
+        <Formik
+          initialValues={{
+            username: "",
+            email: "",
+            password: "",
+            confirmationPassword: "",
+            image: "",
+          }}
+          validationSchema={RegisterSchema}
+          onSubmit={(values) => {
+            const formData = new FormData();
+            formData.append("username", values.username.trim());
+            formData.append("email", values.email.trim());
+            formData.append("password", values.password);
+            formData.append("image", {
+              uri: values.image,
+              name: "profile.jpg",
+              type: "image/jpeg",
+            } as any);
+            mutate(formData);
+          }}
+        >
+          {({
+            handleChange,
+            handleSubmit,
+            values,
+            errors,
+            touched,
+            setFieldValue,
+            handleBlur,
+          }) => (
+            <View style={styles.formWrap}>
+              <View style={styles.avatarWrap}>
+                <Image
+                  source={
+                    values.image
+                      ? { uri: values.image }
+                      : require("@/assets/images/default.png")
+                  }
+                  style={styles.avatar}
+                />
+                <TouchableOpacity
+                  onPress={() => pickImage(setFieldValue)}
+                  style={styles.imagePicked}
+                  accessibilityRole="button"
+                  accessibilityLabel="Change profile image"
+                >
+                  <FontAwesome5 name="pen" size={18} color={colors.blueNavy} />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.helper}>
+                {touched.image && errors.image ? errors.image : " "}
+              </Text>
 
-          <TextInput
-            onChangeText={(text) =>
-              setUserInfo({ ...userInfo, username: text })
-            }
-            placeholder="Username"
-            placeholderTextColor={colors.muted}
-            style={[
-              styles.inputLine,
-              // touched.username && errors.username && styles.inputLineError,
-            ]}
-            value={userInfo.username}
-            autoCapitalize="none"
-            returnKeyType="next"
-          />
-          <Text style={styles.helper}>
-            {/* {touched.username && errors.username ? errors.username : " "} */}
-          </Text>
-
-          <TextInput
-            onChangeText={(text) => setUserInfo({ ...userInfo, email: text })}
-            placeholder="Email"
-            placeholderTextColor={colors.muted}
-            style={[
-              styles.inputLine,
-              // touched.email && errors.email && styles.inputLineError,
-            ]}
-            value={userInfo.email}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="next"
-          />
-          <Text style={styles.helper}>
-            {/* {touched.email && errors.email ? errors.email : " "} */}
-          </Text>
-
-          <View style={styles.passwordField}>
-            <TextInput
-              onChangeText={(text) =>
-                setUserInfo({ ...userInfo, password: text })
-              }
-              placeholder="Password"
-              placeholderTextColor={colors.muted}
-              style={[
-                styles.inputLine,
-                styles.passwordInput,
-                // touched.password &&
-                //   errors.password &&
-                //   styles.inputLineError,
-              ]}
-              value={userInfo.password}
-              secureTextEntry={!showPassword}
-              returnKeyType="next"
-            />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.eye}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <FontAwesome5
-                name={showPassword ? "eye-slash" : "eye"}
-                size={18}
-                color={colors.blueNavy}
+              <TextInput
+                onChangeText={handleChange("username")}
+                onBlur={handleBlur("username")}
+                placeholder="Username"
+                placeholderTextColor={colors.muted}
+                style={[
+                  styles.inputLine,
+                  touched.username && errors.username && styles.inputLineError,
+                ]}
+                value={values.username}
+                autoCapitalize="none"
+                returnKeyType="next"
               />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.helper}>
-            {/* {touched.password && errors.password ? errors.password : " "} */}
-          </Text>
+              <Text style={styles.helper}>
+                {touched.username && errors.username ? errors.username : " "}
+              </Text>
 
-          <View style={styles.passwordField}>
-            <TextInput
-              onChangeText={(text) => setConfirmationPassword(text)}
-              placeholder="Confirm Password"
-              placeholderTextColor={colors.muted}
-              style={[
-                styles.inputLine,
-                styles.passwordInput,
-                // touched.confirmationPassword &&
-                //   errors.confirmationPassword &&
-                //   styles.inputLineError,
-              ]}
-              value={confirmationPassword}
-              secureTextEntry={!showConfirm}
-              returnKeyType="done"
-            />
-            <TouchableOpacity
-              onPress={() => setShowConfirm(!showConfirm)}
-              style={styles.eye}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <FontAwesome5
-                name={showConfirm ? "eye-slash" : "eye"}
-                size={18}
-                color={colors.blueNavy}
+              <TextInput
+                onChangeText={handleChange("email")}
+                onBlur={handleBlur("email")}
+                placeholder="Email"
+                placeholderTextColor={colors.muted}
+                style={[
+                  styles.inputLine,
+                  touched.email && errors.email && styles.inputLineError,
+                ]}
+                value={values.email}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="next"
               />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.helper}>
-            {/* {touched.confirmationPassword && errors.confirmationPassword
+              <Text style={styles.helper}>
+                {touched.email && errors.email ? errors.email : " "}
+              </Text>
+
+              <View style={styles.passwordField}>
+                <TextInput
+                  onChangeText={handleChange("password")}
+                  onBlur={handleBlur("password")}
+                  placeholder="Password"
+                  placeholderTextColor={colors.muted}
+                  style={[
+                    styles.inputLine,
+                    styles.passwordInput,
+                    touched.password &&
+                      errors.password &&
+                      styles.inputLineError,
+                  ]}
+                  value={values.password}
+                  secureTextEntry={!showPassword}
+                  returnKeyType="next"
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.eye}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <FontAwesome5
+                    name={showPassword ? "eye-slash" : "eye"}
+                    size={18}
+                    color={colors.blueNavy}
+                  />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.helper}>
+                {touched.password && errors.password ? errors.password : " "}
+              </Text>
+
+              <View style={styles.passwordField}>
+                <TextInput
+                  onChangeText={handleChange("confirmationPassword")}
+                  onBlur={handleBlur("confirmationPassword")}
+                  placeholder="Confirm Password"
+                  placeholderTextColor={colors.muted}
+                  style={[
+                    styles.inputLine,
+                    styles.passwordInput,
+                    touched.confirmationPassword &&
+                      errors.confirmationPassword &&
+                      styles.inputLineError,
+                  ]}
+                  value={values.confirmationPassword}
+                  secureTextEntry={!showConfirm}
+                  returnKeyType="done"
+                />
+                <TouchableOpacity
+                  onPress={() => setShowConfirm(!showConfirm)}
+                  style={styles.eye}
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                >
+                  <FontAwesome5
+                    name={showConfirm ? "eye-slash" : "eye"}
+                    size={18}
+                    color={colors.blueNavy}
+                  />
+                </TouchableOpacity>
+              </View>
+              <Text style={styles.helper}>
+                {touched.confirmationPassword && errors.confirmationPassword
                   ? errors.confirmationPassword
-                  : " "} */}
-          </Text>
+                  : " "}
+              </Text>
 
-          <View style={styles.buttonContainer}>
-            <CustomButton
-              text={isPending ? "Signing Up..." : "Sign Up"}
-              onPress={handleSubmit}
-            />
-          </View>
-        </View>
+              <View style={styles.buttonContainer}>
+                <CustomButton
+                  text={isPending ? "Signing Up..." : "Sign Up"}
+                  onPress={handleSubmit}
+                />
+              </View>
+            </View>
+          )}
+        </Formik>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
-export default RegisterScreen;
+export default SignupScreen;
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.white },
