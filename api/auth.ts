@@ -1,3 +1,4 @@
+import { SignInUserInfo } from "@/data/userInfo";
 import instance from ".";
 import { storeToken } from "./storage";
 
@@ -10,4 +11,11 @@ const signUp = async (userInfo: FormData) => {
   return res;
 };
 
-export default signUp;
+const signIn = async (userInfo: SignInUserInfo) => {
+  const res = await instance.post("/auth/login", userInfo);
+  console.log(res.data.token);
+  await storeToken(res.data.token);
+  return res;
+};
+
+export { signIn, signUp };
