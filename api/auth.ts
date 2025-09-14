@@ -18,4 +18,9 @@ const signIn = async (userInfo: SignInUserInfo) => {
   return res;
 };
 
-export { signIn, signUp };
+const getCategories = async () => {
+  const res = await instance.get("/catagory");
+  return res.data;
+};
+
+export { getCategories, signIn, signUp };
