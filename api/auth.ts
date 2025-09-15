@@ -23,4 +23,9 @@ const getCategories = async () => {
   return res.data;
 };
 
-export { getCategories, signIn, signUp };
+const createCategory = async (name: string) => {
+  const res = await instance.post("/catagory", { name });
+  return res.data;
+};
+
+export { createCategory, getCategories, signIn, signUp };
