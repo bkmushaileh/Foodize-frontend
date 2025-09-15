@@ -1,6 +1,6 @@
 import { SignInUserInfo } from "@/data/userInfo";
 import instance from ".";
-import { storeToken } from "./storage";
+import { getToken, storeToken } from "./storage";
 
 const signUp = async (userInfo: FormData) => {
   console.log(userInfo);
@@ -28,4 +28,20 @@ const createCategory = async (name: string) => {
   return res.data;
 };
 
-export { createCategory, getCategories, signIn, signUp };
+
+const getProfile = async () => {
+  try {
+    const token = await getToken();
+    if (!token) {
+      return console.log("No Token Found!");
+    }
+    const res = await instance.get(`/user`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    console.log(res.data);
+    return res.data;
+  } catch (error) {}
+};
+
+export { createCategory, getCategories, signIn, signUp, getProfile };
+

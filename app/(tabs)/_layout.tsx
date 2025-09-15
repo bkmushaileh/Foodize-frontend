@@ -1,4 +1,4 @@
-import { deleteToken } from "@/api/storage";
+import { deleteToken, getToken } from "@/api/storage";
 import { colors } from "@/colors/colors";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
@@ -8,10 +8,12 @@ import React, { useContext } from "react";
 import { TouchableOpacity } from "react-native";
 import AuthContext from "../context/AuthContext";
 export default function RootLayout() {
-  const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
+  const { setIsAuthenticated } = useContext(AuthContext);
 
   const handleLogOut = async () => {
     await deleteToken();
+    const token = await getToken(); // should be null now
+    console.log("After delete:", token);
     setIsAuthenticated(false);
     router.dismissTo("/landingPage");
   };
