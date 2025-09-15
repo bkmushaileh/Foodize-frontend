@@ -1,17 +1,38 @@
+import { signIn } from "@/api/auth";
 import AuthContext from "@/app/context/AuthContext";
 import { colors } from "@/colors/colors";
-import { SignInUserInfo } from "@/data/userInfo";
-import React, { useContext, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
-import CustomButton from "../customButton";
-import CustomTextInput from "../customTextInput";
+import { useMutation } from "@tanstack/react-query";
+import { router } from "expo-router";
+import { Formik } from "formik";
+import React, { useContext } from "react";
+import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
+import * as Yup from "yup";
+
+const SignInSchema = Yup.object().shape({
+  email: Yup.string().email("Invalid email").required("Email is required"),
+  password: Yup.string().required("Password is required"),
+});
 
 const SignInScreen = () => {
-  const [userInfo, setUserInfo] = useState<SignInUserInfo>({
-    email: "",
-    password: "",
+  const { setIsAuthenticated } = useContext(AuthContext);
+  const handleError = (error: string) => {
+    if (error === "Request failed with status code 401") {
+      Alert.alert("Invalid Credentials!");
+    }
+  };
+
+  const { mutate, isPending } = useMutation({
+    mutationKey: ["signin"],
+    mutationFn: signIn,
+    onSuccess: () => {
+      setIsAuthenticated(true);
+      router.dismissTo("/(tabs)");
+    },
+    onError: (err: any) => {
+      console.log("Error:", err);
+      handleError(err?.message || "Unknown error");
+    },
   });
-  const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
 
   return (
     <View style={styles.container}>
@@ -19,20 +40,73 @@ const SignInScreen = () => {
       <Text style={styles.subText}>
         Log in to explore recipes & share your own
       </Text>
-      <CustomTextInput
-        placeholder={"Email"}
-        value={userInfo.email}
-        onChangeText={(text) => setUserInfo({ ...userInfo, email: text })}
-      ></CustomTextInput>
-      <CustomTextInput
-        placeholder={"Password"}
-        value={userInfo.password}
-        onChangeText={(text) => setUserInfo({ ...userInfo, password: text })}
-      ></CustomTextInput>
 
-      <View style={styles.buttonContainer}>
-        <CustomButton text={"Sign In"} onPress={() => {}} />
-      </View>
+      <Formik
+        initialValues={{ email: "", password: "" }}
+        validationSchema={SignInSchema}
+        onSubmit={(values) => mutate(values)}
+      >
+        {({ values, errors, touched, handleChange, handleSubmit }) => (
+          <>
+            {/* Email */}
+            <TextInput
+              placeholder="Email"
+              placeholderTextColor={colors.muted}
+              style={[
+                styles.inputLine,
+                touched.email && errors.email && styles.inputLineError,
+              ]}
+              value={values.email}
+              onChangeText={handleChange("email")}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              returnKeyType="next"
+            />
+            <Text style={styles.helper}>
+              {touched.email && errors.email ? errors.email : " "}
+            </Text>
+            <View style={styles.passwordField}>
+              <TextInput
+                placeholder="Password"
+                placeholderTextColor={colors.muted}
+                style={[
+                  styles.inputLine,
+                  styles.passwordInput,
+                  touched.password && errors.password && styles.inputLineError,
+                ]}
+                value={values.password}
+                onChangeText={handleChange("password")}
+                onBlur={handleBlur("password")}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+                returnKeyType="done"
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eye}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <FontAwesome5
+                  name={showPassword ? "eye-slash" : "eye"}
+                  size={18}
+                  color={colors.blueNavy}
+                />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.helper}>
+              {touched.password && errors.password ? errors.password : " "}
+            </Text>
+
+            <View style={styles.buttonContainer}>
+              <CustomButton
+                text={isPending ? "Signing In..." : "Sign In"}
+                onPress={handleSubmit}
+              />
+            </View>
+          </>
+        )}
+      </Formik>
     </View>
   );
 };
@@ -49,6 +123,7 @@ const styles = StyleSheet.create({
     flexDirection: "column",
     paddingHorizontal: 16,
     justifyContent: "center",
+    backgroundColor: "#fff",
   },
   welcomeText: {
     fontSize: 24,
@@ -62,5 +137,38 @@ const styles = StyleSheet.create({
     color: colors.muted,
     textAlign: "center",
     marginBottom: 60,
+  },
+  inputLine: {
+    borderBottomWidth: 2,
+    borderBottomColor: colors.yellow,
+    paddingVertical: 10,
+    marginBottom: 4,
+    fontSize: 16,
+    color: "#000",
+    width: "100%",
+  },
+  inputLineError: {
+    borderBottomColor: colors.error,
+  },
+  helper: {
+    minHeight: 18,
+    lineHeight: 18,
+    color: colors.error,
+    marginBottom: 8,
+    alignSelf: "flex-start",
+    fontSize: 13,
+  },
+  passwordField: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  passwordInput: {
+    flex: 1,
+    paddingRight: 40,
+  },
+  eye: {
+    position: "absolute",
+    right: 0,
+    padding: 10,
   },
 });

@@ -1,10 +1,14 @@
 import { colors } from "@/colors/colors";
 import CustomButton from "@/components/customButton";
-import { router } from "expo-router";
-import React from "react";
+import { Redirect, router } from "expo-router";
+import React, { useContext } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import AuthContext from "./context/AuthContext";
 
-const LandingPage = () => {
+export default function Index() {
+  const { isAuthenticated } = useContext(AuthContext);
+  if (isAuthenticated) return <Redirect href="/(tabs)" />;
+
   return (
     <View style={styles.container}>
       <Image
@@ -37,9 +41,7 @@ const LandingPage = () => {
       </View>
     </View>
   );
-};
-
-export default LandingPage;
+}
 
 const styles = StyleSheet.create({
   container: {

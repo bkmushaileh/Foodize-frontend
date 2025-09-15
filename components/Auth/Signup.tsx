@@ -152,6 +152,7 @@ const SignupScreen = () => {
               </Text>
 
               <TextInput
+                autoComplete="off"
                 onChangeText={handleChange("username")}
                 onBlur={handleBlur("username")}
                 placeholder="Username"
@@ -169,6 +170,7 @@ const SignupScreen = () => {
               </Text>
 
               <TextInput
+                autoComplete="off"
                 onChangeText={handleChange("email")}
                 onBlur={handleBlur("email")}
                 placeholder="Email"
@@ -189,6 +191,7 @@ const SignupScreen = () => {
 
               <View style={styles.passwordField}>
                 <TextInput
+                  autoComplete="off"
                   onChangeText={handleChange("password")}
                   onBlur={handleBlur("password")}
                   placeholder="Password"
@@ -222,6 +225,7 @@ const SignupScreen = () => {
 
               <View style={styles.passwordField}>
                 <TextInput
+                  autoComplete="off"
                   onChangeText={handleChange("confirmationPassword")}
                   onBlur={handleBlur("confirmationPassword")}
                   placeholder="Confirm Password"

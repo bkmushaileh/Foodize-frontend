@@ -7,24 +7,26 @@ import AuthContext from "./context/AuthContext";
 
 export default function RootLayout() {
   const queryClient = new QueryClient();
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   console.log(isAuthenticated);
 
   const checkToken = async () => {
     const token = await getToken();
     if (token) {
-      setIsAuthenticated(true);
+      setIsAuthenticated(!!token);
       console.log(token);
     }
   };
   useEffect(() => {
     checkToken();
-  });
+  }),
+    [];
   return (
     <QueryClientProvider client={queryClient}>
       <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
         <Stack screenOptions={{ headerTintColor: colors.yellowDark }}>
-          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="landingPage" options={{ headerShown: false }} />
+
           <Stack.Screen
             name="auth/signup"
             options={{ title: "Sign Up", headerBackTitle: "Back" }}
