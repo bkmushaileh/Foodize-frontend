@@ -4,7 +4,7 @@ import { getToken, storeToken } from "./storage";
 
 const signUp = async (userInfo: FormData) => {
   console.log(userInfo);
-  const res = await instance.post("auth/signup", userInfo);
+  const res = await instance.post("/auth/signup", userInfo);
   await storeToken(res.data.token);
   console.log(res.data);
 
@@ -28,7 +28,6 @@ const createCategory = async (name: string) => {
   return res.data;
 };
 
-
 const getProfile = async () => {
   try {
     const token = await getToken();
@@ -43,5 +42,4 @@ const getProfile = async () => {
   } catch (error) {}
 };
 
-export { createCategory, getCategories, signIn, signUp, getProfile };
-
+export { createCategory, getCategories, getProfile, signIn, signUp };
