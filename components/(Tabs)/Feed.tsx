@@ -118,7 +118,7 @@ const FeedScreen = () => {
                 selected === cat._id && styles.categoryChipTextActive,
               ]}
             >
-              {cat.name}
+              {cat.name[0].toUpperCase() + cat.name.split("").slice(1).join("")}
             </Text>
           </TouchableOpacity>
         ))}
