@@ -1,17 +1,17 @@
-import Slider from "@react-native-community/slider";
-import axios from "axios";
 import React, { useState } from "react";
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
   View,
+  Alert,
 } from "react-native";
+import Slider from "@react-native-community/slider";
+import axios from "axios";
 import { Button, Chip } from "react-native-paper";
 
-const API_URL = "http://localhost:8000/api/recipes/";
+const API_URL = "http://localhost:8000/api/recipe/"; 
 
 const AddRecipeScreen: React.FC = () => {
   const [name, setName] = useState("");
@@ -40,9 +40,9 @@ const AddRecipeScreen: React.FC = () => {
   };
 
   const removeItem = (type: string, item: string) => {
-    if (type === "step") setSteps(steps.filter((s) => s !== item));
-    if (type === "ing") setIngredients(ingredients.filter((i) => i !== item));
-    if (type === "cat") setCategories(categories.filter((c) => c !== item));
+    if (type === "step") setSteps(steps.filter(s => s !== item));
+    if (type === "ing") setIngredients(ingredients.filter(i => i !== item));
+    if (type === "cat") setCategories(categories.filter(c => c !== item));
   };
 
   const submit = async () => {
@@ -64,20 +64,12 @@ const AddRecipeScreen: React.FC = () => {
       });
       Alert.alert("Success", "Recipe added successfully!");
       // reset form
-      setName("");
-      setDescription("");
-      setSteps([]);
-      setIngredients([]);
-      setCategories([]);
-      setTime(1);
-      setDifficulty(1);
-      setCalories(100);
+      setName(""); setDescription("");
+      setSteps([]); setIngredients([]); setCategories([]);
+      setTime(1); setDifficulty(1); setCalories(100);
     } catch (err: any) {
       console.error(err);
-      Alert.alert(
-        "Error",
-        err?.response?.data?.error || "Something went wrong"
-      );
+      Alert.alert("Error", err?.response?.data?.error || "Something went wrong");
     }
   };
 
@@ -105,19 +97,11 @@ const AddRecipeScreen: React.FC = () => {
           value={stepInput}
           onChangeText={setStepInput}
         />
-        <Button mode="contained" onPress={() => addItem("step")}>
-          Add
-        </Button>
+        <Button mode="contained" onPress={() => addItem("step")}>Add</Button>
       </View>
       <View style={styles.wrap}>
         {steps.map((s, i) => (
-          <Chip
-            key={i}
-            onClose={() => removeItem("step", s)}
-            style={styles.chip}
-          >
-            {s}
-          </Chip>
+          <Chip key={i} onClose={() => removeItem("step", s)} style={styles.chip}>{s}</Chip>
         ))}
       </View>
 
@@ -130,19 +114,11 @@ const AddRecipeScreen: React.FC = () => {
           value={ingInput}
           onChangeText={setIngInput}
         />
-        <Button mode="contained" onPress={() => addItem("ing")}>
-          Add
-        </Button>
+        <Button mode="contained" onPress={() => addItem("ing")}>Add</Button>
       </View>
       <View style={styles.wrap}>
         {ingredients.map((s, i) => (
-          <Chip
-            key={i}
-            onClose={() => removeItem("ing", s)}
-            style={styles.chip}
-          >
-            {s}
-          </Chip>
+          <Chip key={i} onClose={() => removeItem("ing", s)} style={styles.chip}>{s}</Chip>
         ))}
       </View>
 
@@ -155,53 +131,27 @@ const AddRecipeScreen: React.FC = () => {
           value={catInput}
           onChangeText={setCatInput}
         />
-        <Button mode="contained" onPress={() => addItem("cat")}>
-          Add
-        </Button>
+        <Button mode="contained" onPress={() => addItem("cat")}>Add</Button>
       </View>
       <View style={styles.wrap}>
         {categories.map((s, i) => (
-          <Chip
-            key={i}
-            onClose={() => removeItem("cat", s)}
-            style={styles.chip}
-          >
-            {s}
-          </Chip>
+          <Chip key={i} onClose={() => removeItem("cat", s)} style={styles.chip}>{s}</Chip>
         ))}
       </View>
 
       {/* Time */}
       <Text style={styles.label}>Time: {time} h</Text>
-      <Slider
-        minimumValue={1}
-        maximumValue={24}
-        step={1}
-        value={time}
-        onValueChange={setTime}
-      />
+      <Slider minimumValue={1} maximumValue={24} step={1} value={time} onValueChange={setTime} />
 
       {/* Difficulty */}
       <Text style={styles.label}>
         Difficulty: {["Easy", "Medium", "Hard"][difficulty - 1]}
       </Text>
-      <Slider
-        minimumValue={1}
-        maximumValue={3}
-        step={1}
-        value={difficulty}
-        onValueChange={setDifficulty}
-      />
+      <Slider minimumValue={1} maximumValue={3} step={1} value={difficulty} onValueChange={setDifficulty} />
 
       {/* Calories */}
       <Text style={styles.label}>Calories: {calories}</Text>
-      <Slider
-        minimumValue={0}
-        maximumValue={2000}
-        step={50}
-        value={calories}
-        onValueChange={setCalories}
-      />
+      <Slider minimumValue={0} maximumValue={2000} step={50} value={calories} onValueChange={setCalories} />
 
       <Button mode="contained" style={styles.submit} onPress={submit}>
         Submit
@@ -217,23 +167,9 @@ const styles = StyleSheet.create({
   content: { padding: 16 },
   title: { fontSize: 22, fontWeight: "600", marginBottom: 16 },
   label: { fontWeight: "600", marginTop: 12, marginBottom: 4 },
-  input: {
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 8,
-  },
+  input: { backgroundColor: "#fff", borderRadius: 8, borderWidth: 1, borderColor: "#ccc", padding: 8 },
   row: { flexDirection: "row", alignItems: "center" },
-  flexInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    padding: 8,
-    backgroundColor: "#fff",
-    marginRight: 8,
-  },
+  flexInput: { flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 8, backgroundColor: "#fff", marginRight: 8 },
   wrap: { flexDirection: "row", flexWrap: "wrap", marginTop: 6 },
   chip: { margin: 4 },
   submit: { marginTop: 20, backgroundColor: "#f5b800", borderRadius: 12 },
