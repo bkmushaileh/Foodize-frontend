@@ -3,7 +3,7 @@ import { getToken } from "../api/storage";
 import BASE_URL from "./baseurl";
 
 const instance = axios.create({
-  baseURL: BASE_URL,
+  baseURL: `${BASE_URL}/api`,
 });
 
 instance.interceptors.request.use(async (config) => {

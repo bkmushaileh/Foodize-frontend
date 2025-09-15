@@ -20,7 +20,7 @@ const CustomButton = ({ text, onPress, variant = "primary" }: ButtonProps) => {
           backgroundColor: pressed ? colors.blue : colors.blueDark,
         },
         variant === "outline" && {
-          backgroundColor: pressed ? colors.blueLight : colors.white,
+          backgroundColor: pressed ? colors.yellowLight : colors.white,
           borderWidth: 2,
           borderColor: colors.yellow,
         },

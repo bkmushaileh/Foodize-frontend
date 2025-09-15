@@ -1,11 +1,10 @@
 import { signIn } from "@/api/auth";
 import AuthContext from "@/app/context/AuthContext";
 import { colors } from "@/colors/colors";
-import { SignInUserInfo } from "@/data/userInfo";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Formik } from "formik";
-import React, { useContext, useState } from "react";
+import React, { useContext } from "react";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import * as Yup from "yup";
 import CustomButton from "../customButton";
@@ -16,11 +15,7 @@ const SignInSchema = Yup.object().shape({
   password: Yup.string().required("Password is required"),
 });
 const SignInScreen = () => {
-  const [userInfo, setUserInfo] = useState<SignInUserInfo>({
-    email: "",
-    password: "",
-  });
-  const { isAuthenticated, setIsAuthenticated } = useContext(AuthContext);
+  const { setIsAuthenticated } = useContext(AuthContext);
   const handleError = (error: string) => {
     if (error == "Request failed with status code 401") {
       Alert.alert("Invalid Credentials!");
@@ -39,9 +34,6 @@ const SignInScreen = () => {
     },
   });
 
-  const handleSubmit = () => {
-    mutate(userInfo);
-  };
   return (
     <View style={styles.container}>
       <Text style={styles.welcomeText}>Welcome to Sufrah 🍴</Text>
@@ -54,14 +46,7 @@ const SignInScreen = () => {
         validationSchema={SignInSchema}
         onSubmit={(values) => mutate(values)}
       >
-        {({
-          values,
-          errors,
-          touched,
-          handleChange,
-          handleBlur,
-          handleSubmit,
-        }) => (
+        {({ values, errors, touched, handleChange, handleSubmit }) => (
           <>
             <CustomTextInput
               placeholder="Email"
