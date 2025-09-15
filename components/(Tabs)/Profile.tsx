@@ -1,61 +1,68 @@
-import { colors } from "@/colors/colors"; // your color palette
-import * as ImagePicker from "expo-image-picker";
-import React, { useState } from "react";
+import { getProfile } from "@/api/auth";
+import BASE_URL from "@/api/baseurl";
+import { colors } from "@/colors/colors";
+import { useQuery } from "@tanstack/react-query";
+import React from "react";
 import {
-  Alert,
+  ActivityIndicator,
+  FlatList,
   Image,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
   View,
 } from "react-native";
 
 const ProfileScreen = () => {
-  const [username, setUsername] = useState("Bashaier"); // default username
-  const [image, setImage] = useState<string | null>(null);
+  const { data, isFetching } = useQuery({
+    queryKey: ["profile"],
+    queryFn: getProfile,
+  });
 
-  const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 1,
-    });
+  if (isFetching) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="small" color={colors.yellowDark} />
+      </View>
+    );
+  }
 
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  };
-
-  const handleSave = () => {
-    Alert.alert("Profile Updated", `New username: ${username}`);
-    // here you can send data to backend
-  };
+  if (!data) {
+    return (
+      <View style={styles.center}>
+        <Text>No profile data found</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={pickImage}>
-        {image ? (
-          <Image source={{ uri: image }} style={styles.avatar} />
-        ) : (
-          <View style={[styles.avatar, styles.avatarPlaceholder]}>
-            <Text style={styles.avatarText}>+</Text>
-          </View>
-        )}
-      </TouchableOpacity>
+      <View style={styles.avatarWrap}>
+        <View style={styles.avatar}>
+          {data.image && (
+            <Image
+              source={{ uri: `${BASE_URL}/${data.image}` }}
+              style={styles.profileImage}
+            />
+          )}
+        </View>
+      </View>
+      <Text style={styles.username}>{data.username}</Text>
+      <Text style={styles.email}>{data.email}</Text>
 
-      <TextInput
-        style={styles.input}
-        value={username}
-        onChangeText={setUsername}
-        placeholder="Enter username"
-        placeholderTextColor={colors.muted}
-      />
-
-      <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
-        <Text style={styles.saveText}>Save Changes</Text>
-      </TouchableOpacity>
+      <Text style={styles.sectionTitle}>Recipes</Text>
+      {data.recipes.length > 0 ? (
+        <FlatList
+          data={data.recipes}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={({ item }) => (
+            <View style={styles.recipeCard}>
+              <Text style={styles.recipeText}>{item.title}</Text>
+            </View>
+          )}
+        />
+      ) : (
+        <Text style={styles.noRecipes}>No recipes added yet.</Text>
+      )}
     </View>
   );
 };
@@ -63,46 +70,67 @@ const ProfileScreen = () => {
 export default ProfileScreen;
 
 const styles = StyleSheet.create({
+  avatarWrap: {
+    alignItems: "center",
+    marginBottom: 0,
+  },
+  avatar: {
+    height: 170,
+    width: 170,
+    borderRadius: 85,
+    borderWidth: 3,
+    borderColor: colors.yellowLight,
+    overflow: "hidden",
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   container: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "center",
     padding: 20,
     backgroundColor: "#fff",
   },
-  avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  profileImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
+  },
+  username: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#1E1E1E",
+  },
+  email: {
+    fontSize: 16,
+    color: "#555",
     marginBottom: 20,
   },
-  avatarPlaceholder: {
-    backgroundColor: colors.yellow,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: {
-    fontSize: 40,
-    color: "#fff",
-  },
-  input: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.yellowDark,
-    width: "80%",
-    fontSize: 18,
-    paddingVertical: 5,
-    marginBottom: 30,
-    textAlign: "center",
-  },
-  saveBtn: {
-    backgroundColor: colors.yellowDark,
-    paddingVertical: 12,
-    paddingHorizontal: 40,
-    borderRadius: 25,
-  },
-  saveText: {
-    color: "#fff",
-    fontSize: 16,
+  sectionTitle: {
+    fontSize: 20,
     fontWeight: "600",
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  recipeCard: {
+    width: "100%",
+    padding: 15,
+    marginVertical: 6,
+    backgroundColor: "#F5F5F5",
+    borderRadius: 10,
+  },
+  recipeText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  noRecipes: {
+    fontSize: 14,
+    color: "#888",
+    marginTop: 10,
   },
 });
