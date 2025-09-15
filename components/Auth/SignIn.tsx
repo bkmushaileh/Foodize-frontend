@@ -1,11 +1,20 @@
 import { signIn } from "@/api/auth";
 import AuthContext from "@/app/context/AuthContext";
 import { colors } from "@/colors/colors";
+import CustomButton from "@/components/customButton";
+import FontAwesome5 from "@expo/vector-icons/FontAwesome5";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Formik } from "formik";
-import React, { useContext } from "react";
-import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
+import React, { useContext, useState } from "react";
+import {
+  Alert,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import * as Yup from "yup";
 
 const SignInSchema = Yup.object().shape({
@@ -15,6 +24,8 @@ const SignInSchema = Yup.object().shape({
 
 const SignInScreen = () => {
   const { setIsAuthenticated } = useContext(AuthContext);
+  const [showPassword, setShowPassword] = useState(false);
+
   const handleError = (error: string) => {
     if (error === "Request failed with status code 401") {
       Alert.alert("Invalid Credentials!");
@@ -46,7 +57,14 @@ const SignInScreen = () => {
         validationSchema={SignInSchema}
         onSubmit={(values) => mutate(values)}
       >
-        {({ values, errors, touched, handleChange, handleSubmit }) => (
+        {({
+          values,
+          errors,
+          touched,
+          handleChange,
+          handleBlur,
+          handleSubmit,
+        }) => (
           <>
             {/* Email */}
             <TextInput
@@ -58,6 +76,7 @@ const SignInScreen = () => {
               ]}
               value={values.email}
               onChangeText={handleChange("email")}
+              onBlur={handleBlur("email")}
               autoCapitalize="none"
               autoCorrect={false}
               keyboardType="email-address"
