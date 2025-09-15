@@ -18,6 +18,17 @@ const signIn = async (userInfo: SignInUserInfo) => {
   return res;
 };
 
+const getCategories = async () => {
+  const res = await instance.get("/catagory");
+  return res.data;
+};
+
+const createCategory = async (name: string) => {
+  const res = await instance.post("/catagory", { name });
+  return res.data;
+};
+
+
 const getProfile = async () => {
   try {
     const token = await getToken();
@@ -32,4 +43,5 @@ const getProfile = async () => {
   } catch (error) {}
 };
 
-export { getProfile, signIn, signUp };
+export { createCategory, getCategories, signIn, signUp, getProfile };
+
