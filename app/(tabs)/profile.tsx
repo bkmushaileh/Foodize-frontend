@@ -1,9 +1,9 @@
-import Profile from "@/components/(Tabs)/Profile";
+import ProfileScreen from "@/components/(Tabs)/Profile";
 import React from "react";
 import { StyleSheet } from "react-native";
 
 const profile = () => {
-  return <Profile />;
+  return <ProfileScreen />;
 };
 
 export default profile;

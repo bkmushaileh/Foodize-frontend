@@ -5,22 +5,22 @@ import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Formik } from "formik";
 import React, { useContext } from "react";
-import { Alert, StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, TextInput, View } from "react-native";
 import * as Yup from "yup";
-import CustomButton from "../customButton";
-import CustomTextInput from "../customTextInput";
 
 const SignInSchema = Yup.object().shape({
-  email: Yup.string().required("Email is required"),
+  email: Yup.string().email("Invalid email").required("Email is required"),
   password: Yup.string().required("Password is required"),
 });
+
 const SignInScreen = () => {
   const { setIsAuthenticated } = useContext(AuthContext);
   const handleError = (error: string) => {
-    if (error == "Request failed with status code 401") {
+    if (error === "Request failed with status code 401") {
       Alert.alert("Invalid Credentials!");
     }
   };
+
   const { mutate, isPending } = useMutation({
     mutationKey: ["signin"],
     mutationFn: signIn,
@@ -28,7 +28,7 @@ const SignInScreen = () => {
       setIsAuthenticated(true);
       router.dismissTo("/(tabs)");
     },
-    onError: (err) => {
+    onError: (err: any) => {
       console.log("Error:", err);
       handleError(err?.message || "Unknown error");
     },
@@ -48,25 +48,60 @@ const SignInScreen = () => {
       >
         {({ values, errors, touched, handleChange, handleSubmit }) => (
           <>
-            <CustomTextInput
+            {/* Email */}
+            <TextInput
               placeholder="Email"
+              placeholderTextColor={colors.muted}
+              style={[
+                styles.inputLine,
+                touched.email && errors.email && styles.inputLineError,
+              ]}
               value={values.email}
               onChangeText={handleChange("email")}
-              secureTextEntry={false}
-              error={touched.email ? errors.email : undefined}
+              autoCapitalize="none"
+              autoCorrect={false}
+              keyboardType="email-address"
+              returnKeyType="next"
             />
-            <CustomTextInput
-              placeholder="Password"
-              value={values.password}
-              onChangeText={handleChange("password")}
-              secureTextEntry
-              error={touched.password ? errors.password : undefined}
-            />
+            <Text style={styles.helper}>
+              {touched.email && errors.email ? errors.email : " "}
+            </Text>
+            <View style={styles.passwordField}>
+              <TextInput
+                placeholder="Password"
+                placeholderTextColor={colors.muted}
+                style={[
+                  styles.inputLine,
+                  styles.passwordInput,
+                  touched.password && errors.password && styles.inputLineError,
+                ]}
+                value={values.password}
+                onChangeText={handleChange("password")}
+                onBlur={handleBlur("password")}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+                returnKeyType="done"
+              />
+              <TouchableOpacity
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.eye}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <FontAwesome5
+                  name={showPassword ? "eye-slash" : "eye"}
+                  size={18}
+                  color={colors.blueNavy}
+                />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.helper}>
+              {touched.password && errors.password ? errors.password : " "}
+            </Text>
 
             <View style={styles.buttonContainer}>
               <CustomButton
                 text={isPending ? "Signing In..." : "Sign In"}
-                onPress={handleSubmit as any}
+                onPress={handleSubmit}
               />
             </View>
           </>
@@ -102,5 +137,38 @@ const styles = StyleSheet.create({
     color: colors.muted,
     textAlign: "center",
     marginBottom: 60,
+  },
+  inputLine: {
+    borderBottomWidth: 2,
+    borderBottomColor: colors.yellow,
+    paddingVertical: 10,
+    marginBottom: 4,
+    fontSize: 16,
+    color: "#000",
+    width: "100%",
+  },
+  inputLineError: {
+    borderBottomColor: colors.error,
+  },
+  helper: {
+    minHeight: 18,
+    lineHeight: 18,
+    color: colors.error,
+    marginBottom: 8,
+    alignSelf: "flex-start",
+    fontSize: 13,
+  },
+  passwordField: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  passwordInput: {
+    flex: 1,
+    paddingRight: 40,
+  },
+  eye: {
+    position: "absolute",
+    right: 0,
+    padding: 10,
   },
 });
