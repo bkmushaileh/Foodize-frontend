@@ -12,7 +12,7 @@ export default function RootLayout() {
 
   const handleLogOut = async () => {
     await deleteToken();
-    const token = await getToken(); // should be null now
+    const token = await getToken();
     console.log("After delete:", token);
     setIsAuthenticated(false);
     router.dismissTo("/landingPage");
