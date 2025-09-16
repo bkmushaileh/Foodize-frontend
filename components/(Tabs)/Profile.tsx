@@ -144,11 +144,10 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    // alignItems: "center", // ❌ remove to let list/cards stretch
     padding: 20,
     backgroundColor: "#fff",
   },
-  list: { alignSelf: "stretch", width: "100%" }, // ensures FlatList spans width
+  list: { alignSelf: "stretch", width: "100%" },
 
   center: {
     flex: 1,

@@ -19,12 +19,12 @@ const signIn = async (userInfo: SignInUserInfo) => {
 };
 
 const getCategories = async () => {
-  const res = await instance.get("/catagory");
+  const res = await instance.get("/category");
   return res.data;
 };
 
 const createCategory = async (name: string) => {
-  const res = await instance.post("/catagory", { name });
+  const res = await instance.post("/category", { name });
   return res.data;
 };
 
