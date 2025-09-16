@@ -1,4 +1,5 @@
 import { createCategory, getCategories } from "@/api/auth";
+import { getAllRecipes } from "@/api/recipes";
 import { colors } from "@/colors/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -18,6 +19,19 @@ import {
 type Category = {
   _id: string;
   name: string;
+};
+
+type Recipe = {
+  _id: string;
+  name: string;
+  image?: string;
+  description: string;
+  steps: string[];
+  time: number;
+  difficulty: string;
+  calories?: number;
+  categories: { _id: string; name: string; amount: number; unit: string }[];
+  user: { _id: string; username?: string; name?: string; image?: string };
 };
 
 const FeedScreen = () => {
@@ -69,11 +83,24 @@ const FeedScreen = () => {
     }
   };
 
+  {
+    /*This is my code*/
+  }
+
+  const {
+    data: recipes = [],
+    isLoading,
+    isError,
+  } = useQuery<Recipe[]>({
+    queryKey: ["recipes"],
+    queryFn: getAllRecipes,
+  });
+
   if (isFetching) {
     // Show loading spinner while fetching
     return (
       <View style={styles.loading}>
-        <ActivityIndicator color={colors.blue} size="large" />
+        <ActivityIndicator color={colors.blue} size="small" />
       </View>
     );
   }
@@ -96,7 +123,6 @@ const FeedScreen = () => {
           <Text style={styles.seeAllText}>See All</Text>
         </TouchableOpacity>
       </View>
-
       {/* Category chips list */}
       <ScrollView
         horizontal
@@ -166,8 +192,39 @@ const FeedScreen = () => {
 };
 
 export default FeedScreen;
+const capitalize = (s?: string) =>
+  s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
 
 const styles = StyleSheet.create({
+  recipesHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  recipesList: { gap: 12, marginBottom: 24 },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#eee",
+  },
+  cardImg: { width: "100%", height: 160 },
+  cardImgFallback: {
+    width: "100%",
+    height: 160,
+    backgroundColor: "#eee",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cardBody: { padding: 12 },
+  recipeTitle: { fontSize: 18, fontWeight: "600", marginBottom: 4 },
+  recipeDesc: { color: "#666", marginBottom: 8 },
+  recipeMeta: { color: "#777" },
+  errorText: { color: "red", marginBottom: 16 },
+  mutedText: { color: "#666" },
+
   container: {
     flex: 1,
     backgroundColor: "#F6F7FB",

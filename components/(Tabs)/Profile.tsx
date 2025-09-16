@@ -36,29 +36,34 @@ const ProfileScreen = () => {
 
   return (
     <View style={styles.container}>
+      {/* Avatar */}
       <View style={styles.avatarWrap}>
         <View style={styles.avatar}>
           {data.image && (
             <Image
-              source={{ uri: `${BASE_URL}/${data.image}` }}
+              source={{
+                uri: `${BASE_URL}/${String(data.image).replace(/^\/+/, "")}`,
+              }}
               style={styles.profileImage}
             />
           )}
         </View>
       </View>
+
+      {/* Basic info */}
       <Text style={styles.username}>{data.username}</Text>
       <Text style={styles.email}>{data.email}</Text>
 
+      {/* Recipes */}
       <Text style={styles.sectionTitle}>Recipes</Text>
-      {data.recipes.length > 0 ? (
+      {data.recipes && data.recipes.length > 0 ? (
         <FlatList
+          style={styles.list}
           data={data.recipes}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={({ item }) => (
-            <View style={styles.recipeCard}>
-              <Text style={styles.recipeText}>{item.title}</Text>
-            </View>
-          )}
+          keyExtractor={(item) => item._id}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 12 }}
+          renderItem={({ item }) => <RecipeCard recipe={item} />}
         />
       ) : (
         <Text style={styles.noRecipes}>No recipes added yet.</Text>
@@ -69,6 +74,58 @@ const ProfileScreen = () => {
 
 export default ProfileScreen;
 
+/* -------- small card component -------- */
+const RecipeCard = ({ recipe }: { recipe: any }) => {
+  const imgUri = recipe?.image
+    ? recipe.image.startsWith("http")
+      ? recipe.image
+      : `${BASE_URL}/${String(recipe.image).replace(/^\/+/, "")}`
+    : null;
+
+  // support single `category` or multiple `categories`
+  const cats = Array.isArray(recipe?.categories)
+    ? recipe.categories
+    : recipe?.category
+    ? [recipe.category]
+    : [];
+
+  return (
+    <View style={styles.recipeCard}>
+      {imgUri ? (
+        <Image source={{ uri: imgUri }} style={styles.recipeImage} />
+      ) : (
+        <View style={[styles.recipeImage, styles.recipeImageFallback]}>
+          <Text style={styles.noImage}>No Image</Text>
+        </View>
+      )}
+
+      <View style={styles.recipeInfo}>
+        <Text style={styles.recipeName}>{recipe.name}</Text>
+        <Text style={styles.recipeMeta}>
+          ⏱ {Number(recipe.time) || 0} min • {capitalize(recipe.difficulty)}
+          {typeof recipe.calories === "number"
+            ? ` • 🔥 ${recipe.calories} cal`
+            : ""}
+        </Text>
+
+        {cats.length > 0 && (
+          <View style={styles.catRow}>
+            {cats.slice(0, 6).map((c: any) => (
+              <View key={c._id} style={styles.catChip}>
+                <Text style={styles.catChipText}>{capitalize(c.name)}</Text>
+              </View>
+            ))}
+          </View>
+        )}
+      </View>
+    </View>
+  );
+};
+
+const capitalize = (s?: string) =>
+  s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
+
+/* ---------------- styles ---------------- */
 const styles = StyleSheet.create({
   avatarWrap: {
     alignItems: "center",
@@ -87,10 +144,12 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    alignItems: "center",
+    // alignItems: "center", // ❌ remove to let list/cards stretch
     padding: 20,
     backgroundColor: "#fff",
   },
+  list: { alignSelf: "stretch", width: "100%" }, // ensures FlatList spans width
+
   center: {
     flex: 1,
     justifyContent: "center",
@@ -105,11 +164,14 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     color: "#1E1E1E",
+    textAlign: "center",
+    marginTop: 8,
   },
   email: {
     fontSize: 16,
     color: "#555",
     marginBottom: 20,
+    textAlign: "center",
   },
   sectionTitle: {
     fontSize: 20,
@@ -117,20 +179,51 @@ const styles = StyleSheet.create({
     marginTop: 20,
     marginBottom: 10,
   },
+
+  /* recipe card */
   recipeCard: {
     width: "100%",
-    padding: 15,
-    marginVertical: 6,
+    flexDirection: "row",
     backgroundColor: "#F5F5F5",
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#eee",
+    padding: 10,
+    marginVertical: 6,
   },
-  recipeText: {
+  recipeImage: { width: 90, height: 90, borderRadius: 8 },
+  recipeImageFallback: {
+    backgroundColor: "#eee",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  noImage: { color: "#888", fontSize: 12 },
+
+  recipeInfo: { flex: 1, paddingLeft: 8, justifyContent: "center" },
+  recipeName: {
     fontSize: 16,
+    fontWeight: "600",
     color: "#333",
+    marginBottom: 4,
   },
+  recipeMeta: { fontSize: 13, color: "#777", marginBottom: 6 },
+
+  // category chips
+  catRow: { flexDirection: "row", flexWrap: "wrap" },
+  catChip: {
+    backgroundColor: "#EDEDED",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 6,
+    marginBottom: 6,
+  },
+  catChipText: { fontSize: 12, color: "#333", fontWeight: "500" },
+
   noRecipes: {
     fontSize: 14,
     color: "#888",
     marginTop: 10,
+    textAlign: "center",
   },
 });
