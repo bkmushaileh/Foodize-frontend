@@ -80,9 +80,9 @@ export default function RecipesScreen() {
   const { mutate, isPending } = useMutation({
     mutationKey: ["recipe"],
     mutationFn: createRecipe,
-    onSuccess: () => {
+    onSuccess: async () => {
       Alert.alert("Success", "Recipe created!");
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      await queryClient.invalidateQueries({ queryKey: ["recipe"] });
     },
     onError: (error: any) => {
       const msg =
