@@ -63,7 +63,7 @@ const Chip = ({
 );
 
 export type Category = { _id: string; name: string };
-
+export type Ingredients = { _id: string; name: string };
 export default function RecipesScreen() {
   const {
     data,
