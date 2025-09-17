@@ -49,7 +49,13 @@ const FeedScreen = () => {
     queryFn: getCategories,
   });
 
+  console.log("HERE", categories);
+
   const [selected, setSelected] = useState<string | null>(null);
+
+  // New state for the "See All" modal
+  const [allCategoriesModalVisible, setAllCategoriesModalVisible] =
+    useState(false);
 
   // ---------- Modal for new category ----------
   const [modalVisible, setModalVisible] = useState(false);
@@ -122,7 +128,7 @@ const FeedScreen = () => {
           <Ionicons name="add-circle" size={30} color="#FFD700" />
         </TouchableOpacity>
         <Text style={styles.sectionTitle}>Categories</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setAllCategoriesModalVisible(true)}>
           <Text style={styles.seeAllText}>See All</Text>
         </TouchableOpacity>
       </View>
@@ -215,6 +221,65 @@ const FeedScreen = () => {
                 <Text style={{ fontWeight: "600" }}>Create</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* ---------- Modal for All Categories ---------- */}
+      <Modal
+        transparent
+        animationType="slide"
+        visible={allCategoriesModalVisible}
+        onRequestClose={() => setAllCategoriesModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, { maxHeight: "70%" }]}>
+            <Text style={styles.modalTitle}>All Categories</Text>
+
+            <ScrollView style={{ marginVertical: 10 }}>
+              {categories?.length ? (
+                categories.map((cat: Category) => (
+                  <TouchableOpacity
+                    key={cat._id}
+                    style={[
+                      styles.categoryChip,
+                      {
+                        backgroundColor:
+                          selected === cat._id ? "#FFD700" : "#eee",
+                        marginBottom: 8,
+                      },
+                    ]}
+                    onPress={() => {
+                      setSelected(cat._id);
+                      setAllCategoriesModalVisible(false);
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.categoryChipText,
+                        selected === cat._id && styles.categoryChipTextActive,
+                      ]}
+                    >
+                      {cat.name[0].toUpperCase() + cat.name.slice(1)}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text style={{ textAlign: "center", color: "#666" }}>
+                  No categories found.
+                </Text>
+              )}
+            </ScrollView>
+
+            <TouchableOpacity
+              style={[
+                styles.modalButton,
+                { backgroundColor: "#FFD700", marginTop: 12 },
+              ]}
+              onPress={() => setAllCategoriesModalVisible(false)}
+            >
+              <Text style={{ fontWeight: "600" }}>Close</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
