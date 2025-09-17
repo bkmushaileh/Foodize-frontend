@@ -7,7 +7,9 @@ import React, { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Modal,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -37,20 +39,22 @@ type Recipe = {
 const FeedScreen = () => {
   const queryClient = useQueryClient();
 
-  // Fetch all categories from backend
-  const { data, isFetching, refetch } = useQuery<Category[]>({
+  // ---------- Categories ----------
+  const {
+    data: categories,
+    isFetching,
+    refetch,
+  } = useQuery<Category[]>({
     queryKey: ["Category"],
     queryFn: getCategories,
   });
 
-  // Track selected category chip
   const [selected, setSelected] = useState<string | null>(null);
 
-  // Modal state for creating category
+  // ---------- Modal for new category ----------
   const [modalVisible, setModalVisible] = useState(false);
   const [newCategory, setNewCategory] = useState("");
 
-  // Create category using API
   const handleCreateCategory = async () => {
     if (!newCategory.trim()) {
       Alert.alert("Error", "Please enter a category name");
@@ -58,7 +62,6 @@ const FeedScreen = () => {
     }
 
     try {
-      // Try creating category on backend
       await createCategory(newCategory.trim());
       setNewCategory("");
       setModalVisible(false);
@@ -66,8 +69,6 @@ const FeedScreen = () => {
       await queryClient.invalidateQueries({ queryKey: ["Category"] });
     } catch (error: any) {
       console.log("Create category error:", error);
-
-      // ✅ Check if backend responded with "duplicate" error
       if (error.response?.status === 401) {
         Alert.alert("Duplicate", "This category already exists");
       } else if (
@@ -83,38 +84,40 @@ const FeedScreen = () => {
     }
   };
 
-  {
-    /*This is my code*/
-  }
-
-  const {
-    data: recipes = [],
-    isLoading,
-    isError,
-  } = useQuery<Recipe[]>({
+  // ---------- Recipes ----------
+  const { data: recipes = [], isLoading } = useQuery<Recipe[]>({
     queryKey: ["recipes"],
     queryFn: getAllRecipes,
   });
 
-  if (isFetching) {
-    // Show loading spinner while fetching
+  if (isFetching || isLoading) {
     return (
       <View style={styles.loading}>
-        <ActivityIndicator color={colors.blue} size="small" />
+        <ActivityIndicator color={colors.blue ?? "#4A90E2"} size="small" />
       </View>
     );
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* ---------- Header with Add (+) Button ---------- */}
+    <ScrollView
+      style={styles.container}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={isLoading}
+          onRefresh={() =>
+            queryClient.invalidateQueries({ queryKey: ["recipes"] })
+          }
+        />
+      }
+    >
+      {/* ---------- Header ---------- */}
       <View style={styles.header}>
-        <Text style={styles.guestText}>User</Text>
+        <Text style={styles.guestText}>Guest</Text>
       </View>
 
       {/* ---------- Categories Section ---------- */}
       <View style={styles.categoriesHeader}>
-        {/* Plus button to open modal */}
         <TouchableOpacity onPress={() => setModalVisible(true)}>
           <Ionicons name="add-circle" size={30} color="#FFD700" />
         </TouchableOpacity>
@@ -123,13 +126,13 @@ const FeedScreen = () => {
           <Text style={styles.seeAllText}>See All</Text>
         </TouchableOpacity>
       </View>
-      {/* Category chips list */}
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         style={styles.categoriesRow}
       >
-        {data?.map((cat: Category) => (
+        {categories?.map((cat: Category) => (
           <TouchableOpacity
             key={cat._id}
             onPress={() => setSelected(cat._id)}
@@ -144,11 +147,41 @@ const FeedScreen = () => {
                 selected === cat._id && styles.categoryChipTextActive,
               ]}
             >
-              {cat.name[0].toUpperCase() + cat.name.split("").slice(1).join("")}
+              {cat.name[0].toUpperCase() + cat.name.slice(1)}
             </Text>
           </TouchableOpacity>
         ))}
       </ScrollView>
+
+      {/* ---------- Recipes Section ---------- */}
+      <View style={styles.recipesHeader}>
+        <Text style={styles.sectionTitle}>Recipes</Text>
+      </View>
+
+      <View style={styles.recipesList}>
+        {recipes.map((recipe) => (
+          <View key={recipe._id} style={styles.card}>
+            {recipe.image ? (
+              <Image source={{ uri: recipe.image }} style={styles.cardImg} />
+            ) : (
+              <View style={styles.cardImgFallback}>
+                <Text>No Image</Text>
+              </View>
+            )}
+            <View style={styles.cardBody}>
+              <Text style={styles.recipeTitle}>{recipe.name}</Text>
+              <Text style={styles.recipeDesc}>{recipe.description}</Text>
+              <Text style={styles.recipeMeta}>
+                ⏱ {recipe.time} min · {recipe.difficulty}
+                {recipe.calories ?? 0} cal
+              </Text>
+              <Text style={styles.mutedText}>
+                👤 {recipe.user?.username ?? "Unknown"}
+              </Text>
+            </View>
+          </View>
+        ))}
+      </View>
 
       {/* ---------- Modal for Creating Category ---------- */}
       <Modal
@@ -161,7 +194,6 @@ const FeedScreen = () => {
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>New Category</Text>
 
-            {/* Input for new category name */}
             <TextInput
               style={styles.input}
               placeholder="Enter category name"
@@ -169,7 +201,6 @@ const FeedScreen = () => {
               onChangeText={setNewCategory}
             />
 
-            {/* Modal buttons */}
             <View style={styles.modalButtons}>
               <TouchableOpacity
                 style={[styles.modalButton, { backgroundColor: "#ccc" }]}
@@ -194,6 +225,35 @@ const FeedScreen = () => {
 export default FeedScreen;
 
 const styles = StyleSheet.create({
+  recipesHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  recipesList: { gap: 16, marginBottom: 32 },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: "#eee",
+  },
+  cardImg: { width: "100%", height: 160 },
+  cardImgFallback: {
+    width: "100%",
+    height: 160,
+    backgroundColor: "#eee",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cardBody: { padding: 12 },
+  recipeTitle: { fontSize: 18, fontWeight: "600", marginBottom: 4 },
+  recipeDesc: { color: "#666", marginBottom: 8 },
+  recipeMeta: { color: "#777", marginBottom: 4 },
+  errorText: { color: "red", marginBottom: 16 },
+  mutedText: { color: "#666" },
+
   container: {
     flex: 1,
     backgroundColor: "#F6F7FB",
@@ -206,7 +266,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  // Header
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -218,7 +277,6 @@ const styles = StyleSheet.create({
     color: "#555",
   },
 
-  // Categories
   categoriesHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -258,7 +316,6 @@ const styles = StyleSheet.create({
     color: "#333",
   },
 
-  // Modal styles
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",

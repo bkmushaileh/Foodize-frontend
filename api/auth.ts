@@ -28,6 +28,11 @@ const createCategory = async (name: string) => {
   return res.data;
 };
 
+const getAllRecipes = async () => {
+  const res = await instance.get("/recipes");
+  return res.data;
+};
+
 const getProfile = async () => {
   try {
     const token = await getToken();
@@ -42,4 +47,11 @@ const getProfile = async () => {
   } catch (error) {}
 };
 
-export { createCategory, getCategories, getProfile, signIn, signUp };
+export {
+  createCategory,
+  getAllRecipes,
+  getCategories,
+  getProfile,
+  signIn,
+  signUp,
+};
