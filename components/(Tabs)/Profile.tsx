@@ -13,9 +13,10 @@ import {
 } from "react-native";
 
 const ProfileScreen = () => {
-  const { data, isFetching } = useQuery({
+  const { data, isFetching, refetch } = useQuery({
     queryKey: ["profile"],
     queryFn: getProfile,
+    refetchOnMount: "always",
   });
 
   if (isFetching) {
@@ -36,7 +37,6 @@ const ProfileScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Avatar */}
       <View style={styles.avatarWrap}>
         <View style={styles.avatar}>
           {data.image && (
@@ -50,11 +50,9 @@ const ProfileScreen = () => {
         </View>
       </View>
 
-      {/* Basic info */}
       <Text style={styles.username}>{data.username}</Text>
       <Text style={styles.email}>{data.email}</Text>
 
-      {/* Recipes */}
       <Text style={styles.sectionTitle}>Recipes</Text>
       {data.recipes && data.recipes.length > 0 ? (
         <FlatList
@@ -74,7 +72,6 @@ const ProfileScreen = () => {
 
 export default ProfileScreen;
 
-/* -------- small card component -------- */
 const RecipeCard = ({ recipe }: { recipe: any }) => {
   const imgUri = recipe?.image
     ? recipe.image.startsWith("http")
@@ -82,7 +79,6 @@ const RecipeCard = ({ recipe }: { recipe: any }) => {
       : `${BASE_URL}/${String(recipe.image).replace(/^\/+/, "")}`
     : null;
 
-  // support single `category` or multiple `categories`
   const cats = Array.isArray(recipe?.categories)
     ? recipe.categories
     : recipe?.category
@@ -125,7 +121,6 @@ const RecipeCard = ({ recipe }: { recipe: any }) => {
 const capitalize = (s?: string) =>
   s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
 
-/* ---------------- styles ---------------- */
 const styles = StyleSheet.create({
   avatarWrap: {
     alignItems: "center",
@@ -144,11 +139,10 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    // alignItems: "center", // ❌ remove to let list/cards stretch
     padding: 20,
     backgroundColor: "#fff",
   },
-  list: { alignSelf: "stretch", width: "100%" }, // ensures FlatList spans width
+  list: { alignSelf: "stretch", width: "100%" },
 
   center: {
     flex: 1,
@@ -180,7 +174,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
 
-  /* recipe card */
   recipeCard: {
     width: "100%",
     flexDirection: "row",
@@ -208,7 +201,6 @@ const styles = StyleSheet.create({
   },
   recipeMeta: { fontSize: 13, color: "#777", marginBottom: 6 },
 
-  // category chips
   catRow: { flexDirection: "row", flexWrap: "wrap" },
   catChip: {
     backgroundColor: "#EDEDED",

@@ -192,39 +192,8 @@ const FeedScreen = () => {
 };
 
 export default FeedScreen;
-const capitalize = (s?: string) =>
-  s ? s.charAt(0).toUpperCase() + s.slice(1) : "";
 
 const styles = StyleSheet.create({
-  recipesHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  recipesList: { gap: 12, marginBottom: 24 },
-  card: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    overflow: "hidden",
-    borderWidth: 1,
-    borderColor: "#eee",
-  },
-  cardImg: { width: "100%", height: 160 },
-  cardImgFallback: {
-    width: "100%",
-    height: 160,
-    backgroundColor: "#eee",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  cardBody: { padding: 12 },
-  recipeTitle: { fontSize: 18, fontWeight: "600", marginBottom: 4 },
-  recipeDesc: { color: "#666", marginBottom: 8 },
-  recipeMeta: { color: "#777" },
-  errorText: { color: "red", marginBottom: 16 },
-  mutedText: { color: "#666" },
-
   container: {
     flex: 1,
     backgroundColor: "#F6F7FB",

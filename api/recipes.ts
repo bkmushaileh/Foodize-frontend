@@ -1,10 +1,16 @@
 import instance from ".";
-import BASE_URL from "./baseurl";
 
 const getAllRecipes = async () => {
-  const res = await instance.get(`${BASE_URL}/api/recipe`);
+  const res = await instance.get("/recipe");
   console.log(res.data);
   return res.data;
 };
 
-export { getAllRecipes };
+const createRecipe = async (recipeInfo: FormData) => {
+  console.log(recipeInfo);
+  const res = await instance.post("/recipe", recipeInfo);
+  console.log(res.data);
+
+  return res;
+};
+export { createRecipe, getAllRecipes };
