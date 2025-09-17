@@ -66,7 +66,6 @@ const SignInScreen = () => {
           handleSubmit,
         }) => (
           <>
-            {/* Email */}
             <TextInput
               placeholder="Email"
               placeholderTextColor={colors.muted}
