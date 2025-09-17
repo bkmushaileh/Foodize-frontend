@@ -1,4 +1,5 @@
-import { createCategory, getCategories } from "@/api/auth";
+import { createCategory, getCategories, getProfile } from "@/api/auth";
+import BASE_URL from "@/api/baseurl";
 import { getAllRecipes } from "@/api/recipes";
 import { colors } from "@/colors/colors";
 import { Ionicons } from "@expo/vector-icons";
@@ -36,6 +37,13 @@ type Recipe = {
   user: { _id: string; username?: string; name?: string; image?: string };
 };
 
+const getImageUrl = (path?: string | null) => {
+  if (!path) return null;
+  if (/^https?:\/\//i.test(path)) return path;
+
+  const origin = BASE_URL.replace(/\/api\/?$/, "");
+  return `${origin.replace(/\/+$/, "")}/${String(path).replace(/^\/+/, "")}`;
+};
 const FeedScreen = () => {
   const queryClient = useQueryClient();
 
@@ -89,6 +97,12 @@ const FeedScreen = () => {
       }
     }
   };
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: getProfile,
+    refetchOnMount: "always",
+  });
+  console.log(profile);
 
   // ---------- Recipes ----------
   const { data: recipes = [], isLoading } = useQuery<Recipe[]>({
@@ -119,7 +133,22 @@ const FeedScreen = () => {
     >
       {/* ---------- Header ---------- */}
       <View style={styles.header}>
-        <Text style={styles.guestText}>Guest</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+          {getImageUrl(profile?.image) ? (
+            <Image
+              source={{ uri: getImageUrl(profile?.image)! }}
+              style={styles.headerAvatar}
+            />
+          ) : (
+            <View style={[styles.headerAvatar, styles.headerAvatarFallback]}>
+              <Ionicons name="person" size={16} color="#666" />
+            </View>
+          )}
+
+          <Text style={styles.guestText}>
+            {profile?.username || profile?.name || "Guest"}
+          </Text>
+        </View>
       </View>
 
       {/* ---------- Categories Section ---------- */}
@@ -159,7 +188,6 @@ const FeedScreen = () => {
         ))}
       </ScrollView>
 
-      {/* ---------- Recipes Section ---------- */}
       <View style={styles.recipesHeader}>
         <Text style={styles.sectionTitle}>Recipes</Text>
       </View>
@@ -167,8 +195,11 @@ const FeedScreen = () => {
       <View style={styles.recipesList}>
         {recipes.map((recipe) => (
           <View key={recipe._id} style={styles.card}>
-            {recipe.image ? (
-              <Image source={{ uri: recipe.image }} style={styles.cardImg} />
+            {getImageUrl(recipe.image) ? (
+              <Image
+                source={{ uri: getImageUrl(recipe.image)! }}
+                style={styles.cardImg}
+              />
             ) : (
               <View style={styles.cardImgFallback}>
                 <Text>No Image</Text>
@@ -189,7 +220,6 @@ const FeedScreen = () => {
         ))}
       </View>
 
-      {/* ---------- Modal for Creating Category ---------- */}
       <Modal
         transparent
         animationType="fade"
@@ -290,6 +320,16 @@ const FeedScreen = () => {
 export default FeedScreen;
 
 const styles = StyleSheet.create({
+  headerAvatar: {
+    width: 20,
+    height: 20,
+    borderRadius: 14,
+    backgroundColor: "#eee",
+  },
+  headerAvatarFallback: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
   recipesHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -338,8 +378,8 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   guestText: {
-    fontSize: 16,
-    color: "#555",
+    fontSize: 15,
+    color: colors.blue,
   },
 
   categoriesHeader: {
