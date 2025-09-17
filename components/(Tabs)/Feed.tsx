@@ -302,13 +302,10 @@ const FeedScreen = () => {
             </ScrollView>
 
             <TouchableOpacity
-              style={[
-                styles.modalButton,
-                { backgroundColor: "#FFD700", marginTop: 12 },
-              ]}
+              style={[styles.base, ,]}
               onPress={() => setAllCategoriesModalVisible(false)}
             >
-              <Text style={{ fontWeight: "600" }}>Close</Text>
+              <Text style={styles.text}>Close</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -320,6 +317,22 @@ const FeedScreen = () => {
 export default FeedScreen;
 
 const styles = StyleSheet.create({
+  text: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: colors.white,
+  },
+  base: {
+    backgroundColor: colors.yellowDark,
+    paddingVertical: 14,
+    borderRadius: 30,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 4 },
+    width: 300,
+  },
   headerAvatar: {
     width: 20,
     height: 20,
