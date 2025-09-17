@@ -32,6 +32,14 @@ const getAllRecipes = async () => {
   const res = await instance.get("/recipes");
   return res.data;
 };
+const createIngredient = async (name: string) => {
+  const res = await instance.post("/ingredient", { name });
+  return res.data;
+};
+const getAllIngredient = async () => {
+  const res = await instance.get("/ingredient");
+  return res.data;
+};
 
 const getProfile = async () => {
   try {
@@ -49,6 +57,8 @@ const getProfile = async () => {
 
 export {
   createCategory,
+  createIngredient,
+  getAllIngredient,
   getAllRecipes,
   getCategories,
   getProfile,
