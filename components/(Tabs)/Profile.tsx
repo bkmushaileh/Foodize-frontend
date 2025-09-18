@@ -39,14 +39,20 @@ const ProfileScreen = () => {
     <View style={styles.container}>
       <View style={styles.avatarWrap}>
         <View style={styles.avatar}>
-          {data.image && (
-            <Image
-              source={{
-                uri: `${BASE_URL}/${String(data.image).replace(/^\/+/, "")}`,
-              }}
-              style={styles.profileImage}
-            />
-          )}
+          {data.image ? (
+  <Image
+    source={{
+      uri: `${BASE_URL}/${String(data.image).replace(/^\/+/, "")}`,
+    }}
+    style={styles.profileImage}
+  />
+) : (
+  <Image
+    source={require("../../assets/images/icon.png")} // صورة افتراضية
+    style={styles.profileImage}
+  />
+)}
+
         </View>
       </View>
 
