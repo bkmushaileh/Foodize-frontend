@@ -47,7 +47,7 @@ const getImageUrl = (path?: string | null) => {
 
   const origin = BASE_URL.replace(/\/api\/?$/, "");
   return `${origin.replace(/\/+$/, "")}/${String(path).replace(/^\/+/, "")}`;
-  console.log(getImageUrl);
+  
 };
 
 const FeedScreen = () => {
@@ -114,6 +114,11 @@ const FeedScreen = () => {
     queryKey: ["recipes"],
     queryFn: getAllRecipes,
   });
+  const filteredRecipes = selected
+  ? recipes.filter((recipe) =>
+      recipe.categories.some((cat) => cat._id === selected)
+    )
+  : recipes;
 
   if (isFetching || isLoading) {
     return (
@@ -175,7 +180,8 @@ const FeedScreen = () => {
         {categories?.map((cat: Category) => (
           <TouchableOpacity
             key={cat._id}
-            onPress={() => setSelected(cat._id)}
+            onPress={() => setSelected(prev => (prev === cat._id ? null : cat._id))}
+
             style={[
               styles.categoryChip,
               selected === cat._id && styles.categoryChipActive,
@@ -198,11 +204,12 @@ const FeedScreen = () => {
       </View>
 
       <View style={styles.recipesList}>
-        {recipes.map((recipe) => (
+        {filteredRecipes.map((recipe) => (
+
           <TouchableOpacity
             key={recipe._id}
             style={styles.card}
-            // ✅ التعديل هنا فقط
+            // ينقلنا للصفحه الثانيه
             onPress={() => router.push({ pathname: "/recipedetails/[id]", params: { id: recipe._id } })}
 
 
