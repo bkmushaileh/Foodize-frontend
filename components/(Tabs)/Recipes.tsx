@@ -1,4 +1,10 @@
-import { createCategory, getCategories } from "@/api/auth";
+import {
+  createCategory,
+  createIngredient,
+  getAllIngredient,
+  getCategories,
+} from "@/api/auth";
+
 import { createRecipe } from "@/api/recipes";
 import { colors } from "@/colors/colors";
 import Slider from "@react-native-community/slider";
@@ -40,6 +46,9 @@ const Schema = Yup.object({
   categoryIds: Yup.array()
     .of(Yup.string())
     .min(1, "Pick at least one category"),
+  ingredients: Yup.array()
+    .of(Yup.string())
+    .min(1, "Add at least one ingredient"),
 });
 
 const Chip = ({
@@ -63,7 +72,7 @@ const Chip = ({
 );
 
 export type Category = { _id: string; name: string };
-export type Ingredients = { _id: string; name: string };
+export type Ingredient = { _id: string; name: string };
 export default function RecipesScreen() {
   const {
     data,
@@ -74,7 +83,13 @@ export default function RecipesScreen() {
     queryKey: ["categories"],
     queryFn: getCategories,
   });
+  const { data: ingData, refetch: refetchIngredients } = useQuery({
+    queryKey: ["ingredients"],
+    queryFn: getAllIngredient,
+  });
   const categories: Category[] = Array.isArray(data) ? data : [];
+  const ingredients: Ingredient[] = Array.isArray(ingData) ? ingData : [];
+
   const queryClient = useQueryClient();
 
   const { mutate, isPending } = useMutation({
@@ -106,6 +121,23 @@ export default function RecipesScreen() {
         err?.response?.data?.message ||
         err?.message ||
         "Failed to create category";
+      Alert.alert("Error", msg);
+    },
+  });
+
+  const { mutate: addIngredient, isPending: isAddingIngredient } = useMutation({
+    mutationKey: ["ingredients"],
+    mutationFn: createIngredient,
+    onSuccess: () => {
+      Alert.alert("Success", "Ingredient created!");
+      refetchIngredients();
+    },
+    onError: (err: any) => {
+      const msg =
+        err?.response?.data?.error ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to create Ingredient";
       Alert.alert("Error", msg);
     },
   });
@@ -156,7 +188,8 @@ export default function RecipesScreen() {
               steps: [] as string[],
               imageUri: "",
               ingInput: "",
-              ingredients: [] as string[],
+              // similar to category u need to make it as id+ you need to have ingredient input
+              ingredientsIds: [] as string[],
               categoryIds: [] as string[],
               catInput: "",
               time: 0,
@@ -171,8 +204,11 @@ export default function RecipesScreen() {
               formData.append("time", String(values.time));
               formData.append("difficulty", values.difficulty);
               formData.append("calories", String(values.calories ?? 0));
-
+              //need to append ingredient
               values.steps.forEach((s) => formData.append("steps[]", s));
+              values.ingredientsIds.forEach((id) =>
+                formData.append("ingredients[]", id)
+              );
               values.categoryIds.forEach((id) =>
                 formData.append("categories[]", id)
               );
@@ -232,7 +268,7 @@ export default function RecipesScreen() {
                 const ingredient = values.ingInput.trim();
                 if (!ingredient) return;
                 setFieldValue("ingredients", [
-                  ...values.ingredients,
+                  ...values.ingredientsIds,
                   ingredient,
                 ]);
                 setFieldValue("ingInput", "");
@@ -240,7 +276,7 @@ export default function RecipesScreen() {
               const removeIng = (label: string) =>
                 setFieldValue(
                   "ingredients",
-                  values.ingredients.filter(
+                  values.ingredientsIds.filter(
                     (ingredient) => ingredient !== label
                   )
                 );
@@ -361,14 +397,14 @@ export default function RecipesScreen() {
                     />
 
                     <CustomSmallButton
-                      title={isAddingCategory ? "Adding..." : "Add"}
+                      title={isAddingIngredient ? "Adding..." : "Add"}
                       onPress={addIngredient}
                     />
                   </View>
 
-                  {!!values.ingredients.length && (
+                  {!!values.ingredientsIds.length && (
                     <View style={styles.chipsWrap}>
-                      {values.ingredients.map((s, i) => (
+                      {values.ingredientsIds.map((s, i) => (
                         <TouchableOpacity
                           key={i}
                           onPress={() => removeIng(s)}
@@ -385,6 +421,39 @@ export default function RecipesScreen() {
                       ))}
                     </View>
                   )}
+
+                  <View style={styles.chipsWrap}>
+                    {ingredients.map((i) => {
+                      const selected = values.ingredientsIds.includes(i._id);
+                      return (
+                        <TouchableOpacity
+                          key={i._id}
+                          onPress={() => {
+                            const set = new Set(values.ingredientsIds);
+                            if (set.has(i._id)) set.delete(i._id);
+                            else set.add(i._id);
+                            setFieldValue("ingredients", Array.from(set));
+                          }}
+                          style={[
+                            styles.chip,
+                            styles.chipMuted,
+                            selected && { backgroundColor: "#dadff0" },
+                          ]}
+                          activeOpacity={0.8}
+                        >
+                          <Text
+                            style={[
+                              styles.chipText,
+                              { color: "#5a6376" },
+                              selected && { color: "#1f2533" },
+                            ]}
+                          >
+                            {i.name}
+                          </Text>
+                        </TouchableOpacity>
+                      );
+                    })}
+                  </View>
 
                   <View style={styles.rowLabel}>
                     <Text style={styles.label}>
