@@ -95,9 +95,9 @@ export default function RecipesScreen() {
   const { mutate, isPending } = useMutation({
     mutationKey: ["recipe"],
     mutationFn: createRecipe,
-    onSuccess: async () => {
+    onSuccess: () => {
       Alert.alert("Success", "Recipe created!");
-      await queryClient.invalidateQueries({ queryKey: ["recipe"] });
+      queryClient.invalidateQueries({ queryKey: ["recipe"] });
     },
     onError: (error: any) => {
       const msg =
@@ -113,6 +113,8 @@ export default function RecipesScreen() {
     mutationFn: createCategory,
     onSuccess: () => {
       Alert.alert("Success", "Category created!");
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+
       refetchCategories();
     },
     onError: (err: any) => {
@@ -125,22 +127,24 @@ export default function RecipesScreen() {
     },
   });
 
-  const { mutate: addIngredient, isPending: isAddingIngredient } = useMutation({
-    mutationKey: ["ingredients"],
-    mutationFn: createIngredient,
-    onSuccess: () => {
-      Alert.alert("Success", "Ingredient created!");
-      refetchIngredients();
-    },
-    onError: (err: any) => {
-      const msg =
-        err?.response?.data?.error ||
-        err?.response?.data?.message ||
-        err?.message ||
-        "Failed to create Ingredient";
-      Alert.alert("Error", msg);
-    },
-  });
+  const { mutate: addIngredientMutation, isPending: isAddingIngredient } =
+    useMutation({
+      mutationKey: ["ingredients"],
+      mutationFn: createIngredient,
+      onSuccess: () => {
+        Alert.alert("Success", "Ingredient created!");
+        queryClient.invalidateQueries({ queryKey: ["ingredients"] });
+        refetchIngredients();
+      },
+      onError: (err: any) => {
+        const msg =
+          err?.response?.data?.error ||
+          err?.response?.data?.message ||
+          err?.message ||
+          "Failed to create Ingredient";
+        Alert.alert("Error", msg);
+      },
+    });
 
   const pickImage = async (setFieldValue: any) => {
     const result = await ImagePicker.launchImageLibraryAsync({
@@ -398,29 +402,47 @@ export default function RecipesScreen() {
 
                     <CustomSmallButton
                       title={isAddingIngredient ? "Adding..." : "Add"}
-                      onPress={addIngredient}
+                      onPress={async () => {
+                        const ingredientInput = values.ingInput.trim();
+                        if (!ingredientInput) return;
+                        const existing = ingredients.find(
+                          (i) =>
+                            i.name.toLowerCase() ===
+                            ingredientInput.toLowerCase()
+                        );
+                        if (existing) {
+                          const set = new Set(values.ingredientsIds);
+                          set.has(existing._id)
+                            ? set.delete(existing._id)
+                            : set.add(existing._id);
+                          setFieldValue("ingredientIds", Array.from(set));
+                          setFieldValue("ingInput", "");
+                          return;
+                        }
+
+                        addIngredientMutation(ingredientInput, {
+                          onSuccess: async () => {
+                            const fresh = await refetchIngredients();
+                            const list = Array.isArray(fresh.data)
+                              ? fresh.data
+                              : [];
+                            const created = list.find(
+                              (i: any) =>
+                                i.name.toLowerCase() ===
+                                ingredientInput.toLowerCase()
+                            );
+                            if (created?._id) {
+                              setFieldValue("ingredientsIds", [
+                                ...values.ingredientsIds,
+                                created._id,
+                              ]);
+                            }
+                            setFieldValue("ingInput", "");
+                          },
+                        });
+                      }}
                     />
                   </View>
-
-                  {!!values.ingredientsIds.length && (
-                    <View style={styles.chipsWrap}>
-                      {values.ingredientsIds.map((s, i) => (
-                        <TouchableOpacity
-                          key={i}
-                          onPress={() => removeIng(s)}
-                          style={[
-                            styles.chip,
-                            styles.chipMuted,
-                            { shadowOpacity: 0.08 },
-                          ]}
-                        >
-                          <Text style={[styles.chipText, { color: "#5a6376" }]}>
-                            {s}
-                          </Text>
-                        </TouchableOpacity>
-                      ))}
-                    </View>
-                  )}
 
                   <View style={styles.chipsWrap}>
                     {ingredients.map((i) => {
@@ -432,7 +454,7 @@ export default function RecipesScreen() {
                             const set = new Set(values.ingredientsIds);
                             if (set.has(i._id)) set.delete(i._id);
                             else set.add(i._id);
-                            setFieldValue("ingredients", Array.from(set));
+                            setFieldValue("ingredientsIds", Array.from(set));
                           }}
                           style={[
                             styles.chip,
