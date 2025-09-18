@@ -26,7 +26,10 @@ export default function RootLayout() {
       <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated }}>
         <Stack screenOptions={{ headerTintColor: colors.yellowDark }}>
           <Stack.Screen name="landingPage" options={{ headerShown: false }} />
-
+          <Stack.Screen
+            name="recipes"
+            options={{ title: "Recipe", headerBackTitle: "Back" }}
+          />
           <Stack.Screen
             name="auth/signup"
             options={{ title: "Sign Up", headerBackTitle: "Back" }}

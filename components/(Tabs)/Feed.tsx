@@ -1,10 +1,13 @@
 import { createCategory, getCategories, getProfile } from "@/api/auth";
+import { useRouter } from "expo-router";
 import BASE_URL from "@/api/baseurl";
 import { getAllRecipes } from "@/api/recipes";
 import { colors } from "@/colors/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
+import { Link } from "expo-router";
+
 import {
   ActivityIndicator,
   Alert,
@@ -18,6 +21,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import RecipeDetails from "@/app/recipedetails/[id]";
 
 type Category = {
   _id: string;
@@ -43,9 +47,12 @@ const getImageUrl = (path?: string | null) => {
 
   const origin = BASE_URL.replace(/\/api\/?$/, "");
   return `${origin.replace(/\/+$/, "")}/${String(path).replace(/^\/+/, "")}`;
+  
 };
+
 const FeedScreen = () => {
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   // ---------- Categories ----------
   const {
@@ -56,8 +63,6 @@ const FeedScreen = () => {
     queryKey: ["Category"],
     queryFn: getCategories,
   });
-
-  console.log("HERE", categories);
 
   const [selected, setSelected] = useState<string | null>(null);
 
@@ -97,18 +102,23 @@ const FeedScreen = () => {
       }
     }
   };
+
   const { data: profile } = useQuery({
     queryKey: ["profile"],
     queryFn: getProfile,
     refetchOnMount: "always",
   });
-  console.log(profile);
 
   // ---------- Recipes ----------
   const { data: recipes = [], isLoading } = useQuery<Recipe[]>({
     queryKey: ["recipes"],
     queryFn: getAllRecipes,
   });
+  const filteredRecipes = selected
+  ? recipes.filter((recipe) =>
+      recipe.categories.some((cat) => cat._id === selected)
+    )
+  : recipes;
 
   if (isFetching || isLoading) {
     return (
@@ -170,7 +180,8 @@ const FeedScreen = () => {
         {categories?.map((cat: Category) => (
           <TouchableOpacity
             key={cat._id}
-            onPress={() => setSelected(cat._id)}
+            onPress={() => setSelected(prev => (prev === cat._id ? null : cat._id))}
+
             style={[
               styles.categoryChip,
               selected === cat._id && styles.categoryChipActive,
@@ -193,11 +204,20 @@ const FeedScreen = () => {
       </View>
 
       <View style={styles.recipesList}>
-        {recipes.map((recipe) => (
-          <View key={recipe._id} style={styles.card}>
+        {filteredRecipes.map((recipe) => (
+
+          <TouchableOpacity
+            key={recipe._id}
+            style={styles.card}
+            // ينقلنا للصفحه الثانيه
+            onPress={() => router.push({ pathname: "/recipedetails/[id]", params: { id: recipe._id } })}
+
+
+          >  
             {getImageUrl(recipe.image) ? (
               <Image
                 source={{ uri: getImageUrl(recipe.image)! }}
+                
                 style={styles.cardImg}
               />
             ) : (
@@ -216,10 +236,11 @@ const FeedScreen = () => {
                 👤 {recipe.user?.username ?? "Unknown"}
               </Text>
             </View>
-          </View>
+          </TouchableOpacity>
         ))}
       </View>
 
+      {/* ---------- Modal for New Category ---------- */}
       <Modal
         transparent
         animationType="fade"
@@ -371,7 +392,6 @@ const styles = StyleSheet.create({
   recipeMeta: { color: "#777", marginBottom: 4 },
   errorText: { color: "red", marginBottom: 16 },
   mutedText: { color: "#666" },
-
   container: {
     flex: 1,
     backgroundColor: "#F6F7FB",
@@ -383,7 +403,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -394,7 +413,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.blue,
   },
-
   categoriesHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -427,13 +445,11 @@ const styles = StyleSheet.create({
     color: "#000",
     fontWeight: "600",
   },
-
   sectionTitle: {
     fontSize: 20,
     fontWeight: "600",
     color: "#333",
   },
-
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.4)",

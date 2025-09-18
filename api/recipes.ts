@@ -13,4 +13,8 @@ const createRecipe = async (recipeInfo: FormData) => {
 
   return res;
 };
-export { createRecipe, getAllRecipes };
+const getRecipeById = async (id: string) => {
+  const res = await instance.get(`/recipes/${id}`);
+  return res.data;
+};
+export { createRecipe, getAllRecipes, getRecipeById };
