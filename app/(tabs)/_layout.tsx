@@ -23,7 +23,7 @@ export default function RootLayout() {
       screenOptions={{
         tabBarActiveTintColor: colors.yellowDark,
         animation: "shift",
-        headerTintColor: colors.yellowLight,
+        headerTintColor: colors.yellowDark,
       }}
     >
       <Tabs.Screen
