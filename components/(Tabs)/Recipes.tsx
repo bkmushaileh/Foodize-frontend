@@ -42,26 +42,6 @@ const Schema = Yup.object({
     .min(1, "Pick at least one category"),
 });
 
-const Chip = ({
-  selected,
-  label,
-  onPress,
-}: {
-  selected: boolean;
-  label: string;
-  onPress: () => void;
-}) => (
-  <TouchableOpacity
-    onPress={onPress}
-    style={[styles.chip, selected && styles.chipSelected]}
-    activeOpacity={0.7}
-  >
-    <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-      {label}
-    </Text>
-  </TouchableOpacity>
-);
-
 export type Category = { _id: string; name: string };
 export type Ingredients = { _id: string; name: string };
 export default function RecipesScreen() {
@@ -170,7 +150,7 @@ export default function RecipesScreen() {
               formData.append("description", values.description.trim());
               formData.append("time", String(values.time));
               formData.append("difficulty", values.difficulty);
-              formData.append("calories", String(values.calories ?? 0));
+              formData.append("calories", String(values.calories));
 
               values.steps.forEach((s) => formData.append("steps[]", s));
               values.categoryIds.forEach((id) =>
