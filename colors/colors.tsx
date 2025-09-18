@@ -1,6 +1,6 @@
 export const colors = {
   yellowDark: "#F5A302",
-  yellow: "#F5B400", // Primary
+  yellow: "#F5B400",
   yellowLight: "#FFD35C",
 
   blueLight: "#B2D9F8",
@@ -12,6 +12,6 @@ export const colors = {
   muted: "#6B7280",
   white: "#FFFFFF",
   bg: "#FAFAFA",
-
+  lightGray: "#F5F5F5",
   error: "#B00020",
 };
