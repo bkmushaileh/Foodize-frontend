@@ -41,6 +41,7 @@ const ProfileScreen = () => {
 
   return (
     <View style={styles.container}>
+
       <View style={styles.profileHeader}>
         <Image
           source={{
